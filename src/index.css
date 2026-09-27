@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --color-navy: #1a3a8f;
+  --color-navy-dark: #122878;
+  --color-navy-light: #2d52b8;
+  --color-slate-bg: #f0f4ff;
+  --color-wa-green: #25d366;
+  --color-wa-dark: #128c7e;
+  --font-family-display: 'Poppins', sans-serif;
+  --font-family-body: 'Inter', sans-serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  color: #1e293b;
+  background: #ffffff;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', sans-serif;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+/* WhatsApp floating button stacks above the chatbot floating button */
+.wa-float {
+  position: fixed;
+  bottom: 92px;
+  right: 24px;
+  z-index: 990;
+}
+
+@media (max-width: 768px) {
+  .wa-float {
+    bottom: 140px;
+    right: 16px;
+    z-index: 990;
+  }
+}
