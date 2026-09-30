@@ -1,37 +1,68 @@
-import { Link } from 'react-router-dom';
-import type { Service } from '../data/services';
+import { Link } from "react-router-dom"
+import type { Service } from "../data/services"
 
-const statusConfig = {
-  available: { label: 'Available', class: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  enquire: { label: 'Enquire', class: 'bg-amber-50 text-amber-700 border-amber-200' },
-  'coming-soon': { label: 'Coming Soon', class: 'bg-slate-100 text-slate-500 border-slate-200' },
-};
+interface ServiceCardProps {
+  service: Service
+}
 
-export default function ServiceCard({ service }: { service: Service }) {
-  const status = statusConfig[service.status] || statusConfig.available;
+export default function ServiceCard({ service }: ServiceCardProps) {
+  const isAvailable = service.status === "available"
+
   return (
     <Link
       to={`/services/${service.id}`}
-      className="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-4 sm:p-5 flex flex-col"
+      className="group bg-white rounded-2xl border border-slate-200 hover:border-[#1565C0] p-5 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between"
     >
-      <div className="flex items-start justify-between mb-3">
-        <div className="w-11 h-11 rounded-xl bg-[#f0f4ff] flex items-center justify-center text-2xl">
-          {service.icon}
+      <div>
+        {/* Card Header: Icon & Category/Status Tag */}
+        <div className="flex items-start justify-between gap-2 mb-3.5">
+          <div className="w-12 h-12 rounded-xl bg-[#EAF4FF] group-hover:bg-[#DBEAFE] border border-[#BFDBFE]/70 flex items-center justify-center text-2xl transition-colors">
+            {service.icon}
+          </div>
+          <span
+            className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full border tracking-wide uppercase ${
+              isAvailable
+                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                : "bg-amber-50 text-amber-700 border-amber-200"
+            }`}
+          >
+            {isAvailable ? "Available" : "Enquire"}
+          </span>
         </div>
-        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${status.class}`}>
-          {status.label}
-        </span>
+
+        {/* Category Label */}
+        <div className="text-[11px] font-semibold text-[#1565C0] uppercase tracking-wider mb-1">
+          {service.category}
+        </div>
+
+        {/* Service Name */}
+        <h3 className="font-bold text-base font-['Poppins'] text-[#0D47A1] leading-snug group-hover:text-[#1565C0] transition-colors mb-2">
+          {service.name}
+        </h3>
+
+        {/* Short Description */}
+        <p className="text-xs text-slate-500 leading-relaxed line-clamp-3">
+          {service.shortDescription}
+        </p>
       </div>
-      <h3 className="font-semibold text-slate-800 text-sm leading-snug mb-1 group-hover:text-[#1a3a8f] transition-colors">
-        {service.name}
-      </h3>
-      <p className="text-slate-500 text-xs leading-relaxed flex-1">{service.description}</p>
-      <div className="mt-3 flex items-center gap-1 text-[#1a3a8f] text-xs font-medium">
-        View Details
-        <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+
+      {/* Card Footer: View Details CTA */}
+      <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-[#1565C0] group-hover:text-[#0D47A1]">
+        <span>View Details &amp; Documents</span>
+        <svg
+          className="w-4 h-4 group-hover:translate-x-1 transition-transform"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2.5}
+            d="M9 5l7 7-7 7"
+          />
         </svg>
       </div>
     </Link>
-  );
+  )
 }

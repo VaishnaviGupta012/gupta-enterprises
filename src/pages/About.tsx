@@ -1,169 +1,195 @@
-import { Link } from 'react-router-dom';
-import { CONTACT, waLink } from '../data/contact';
+import { Link } from "react-router-dom"
+import { CONTACT, waLink } from "../data/contact"
 
-const values = [
-  { icon: '🤝', title: 'Customer-First Approach', desc: 'We prioritise your convenience and ensure every visit to our centre is productive and pleasant.' },
-  { icon: '📚', title: 'Knowledgeable Staff', desc: 'Our team stays updated with the latest requirements and procedures for all the services we offer.' },
-  { icon: '🔒', title: 'Confidentiality', desc: 'We handle your information with care and respect your privacy at every step.' },
-  { icon: '📍', title: 'Local Presence', desc: 'A physical centre in Pipraich you can visit and trust, backed by real people in your community.' },
-];
+const VALUES = [
+  {
+    icon: "🤝",
+    title: "Citizen-Centric Guidance",
+    desc: "We prioritize your convenience, patiently explaining forms and procedures without complicated jargon.",
+  },
+  {
+    icon: "🏛️",
+    title: "Authorized CSC Standards",
+    desc: "Operating with genuine portal access, official BBPS bill receipt generation, and secure DigiPay banking.",
+  },
+  {
+    icon: "🔒",
+    title: "Data Privacy & Care",
+    desc: "We never store your passwords or unauthorized document copies. Your privacy and records remain fully protected.",
+  },
+  {
+    icon: "📍",
+    title: "Local Rooted Presence",
+    desc: "A permanent physical centre in Pipraich you can visit, run by trusted local professionals from your own community.",
+  },
+]
 
 export default function About() {
   return (
-    <div className="min-h-screen bg-white pb-20 md:pb-0">
+    <div className="min-h-screen bg-[#F5F9FF] pb-24 md:pb-16 w-full overflow-x-hidden">
       {/* Header */}
-      <div className="bg-[#1a3a8f] text-white py-10 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-2xl sm:text-3xl font-bold font-['Poppins'] mb-1">About Gupta Enterprises</h1>
-          <p className="text-blue-200 text-sm">Your trusted local digital service assistance centre in Pipraich, Gorakhpur</p>
+      <div className="bg-[#0D47A1] text-white py-12 px-4 sm:px-6 lg:px-8 border-b border-[#0a3880]">
+        <div className="site-container max-w-4xl text-center">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-blue-100 text-xs font-semibold uppercase tracking-wider mb-3">
+            <span>Gupta Enterprises</span>
+            <span>•</span>
+            <span>About Us</span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-extrabold font-['Poppins'] tracking-tight">
+            About Gupta Enterprises
+          </h1>
+          <p className="text-blue-100 text-sm sm:text-base max-w-2xl mx-auto mt-2 leading-relaxed">
+            Your authorized Common Service Centre (CSC) &amp; Digital Seva
+            Kendra in Pipraich, Gorakhpur.
+          </p>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
-        {/* About */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold font-['Poppins'] text-slate-800 mb-4">About the Centre</h2>
-            <p className="text-slate-600 text-sm leading-relaxed mb-3">
-              Gupta Enterprises is a Digital &amp; Online Service Assistance Centre located in Buddh Nagar, Nagar Panchayat Pipraich, Gorakhpur, Uttar Pradesh.
+      <div className="site-container py-10 max-w-4xl space-y-10">
+        {/* Story & Centre Profile */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+          <div className="md:col-span-7 space-y-4">
+            <div className="section-badge">
+              Serving Pipraich &amp; Gorakhpur
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold font-['Poppins'] text-[#0D47A1]">
+              Dedicated to Digital Inclusion &amp; Easy Citizen Assistance
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Gupta Enterprises was established with a clear mission: to make
+              government welfare schemes, official documents, banking, and
+              digital citizen services accessible to every resident in and
+              around Pipraich.
             </p>
-            <p className="text-slate-600 text-sm leading-relaxed mb-3">
-              We help individuals and families access essential digital services — from government documents and certificates to insurance, bill payments, travel bookings, and educational forms — all under one roof with personalised guidance.
-            </p>
-            <p className="text-slate-600 text-sm leading-relaxed">
-              Our team makes complex online processes simple and stress-free, especially for those who are less familiar with digital platforms.
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              In today's digital era, government portals require strict photo
+              formats, precise documentation, and online fee payments. We
+              provide a friendly, reliable physical environment where citizens
+              of all ages can get their applications processed smoothly without
+              running between offices.
             </p>
           </div>
-          <div className="bg-[#f0f4ff] rounded-2xl p-8 flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-6xl mb-3">🏬</div>
-              <div className="font-bold text-[#1a3a8f] text-lg font-['Poppins']">Gupta Enterprises</div>
-              <div className="text-slate-500 text-sm mt-1">Digital &amp; Online Service Assistance Centre</div>
-              <div className="mt-4 space-y-2 text-slate-500 text-xs text-left">
+
+          <div className="md:col-span-5">
+            <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-sm space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-[#1565C0] text-white flex items-center justify-center font-bold text-xl font-['Poppins']">
+                GE
+              </div>
+              <div>
+                <h3 className="font-bold text-lg font-['Poppins'] text-[#0D47A1]">
+                  Gupta Enterprises
+                </h3>
+                <p className="text-xs text-[#1565C0] font-semibold">
+                  Authorized Common Service Centre
+                </p>
+              </div>
+
+              <div className="space-y-2 pt-2 border-t border-slate-100 text-xs text-slate-600">
                 <div className="flex items-start gap-2">
                   <span>📍</span>
-                  <div>
-                    <span>{CONTACT.addressLine1}<br />{CONTACT.addressLine2}<br />{CONTACT.addressLine3}</span>
-                    <a
-                      href={CONTACT.mapsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-[#1a3a8f] font-semibold hover:underline block mt-1"
-                    >
-                      🗺️ Get Directions →
-                    </a>
-                  </div>
+                  <span>{CONTACT.fullAddress}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span>📞</span>
-                  <a href={`tel:${CONTACT.phoneTel}`} className="text-[#1a3a8f] font-medium hover:underline">{CONTACT.phone}</a>
+                  <a
+                    href={`tel:${CONTACT.phoneTel}`}
+                    className="font-semibold text-[#1565C0] hover:underline"
+                  >
+                    {CONTACT.phone}
+                  </a>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>🕐</span>
-                  <span>Mon–Sat: 9:00 AM – 8:00 PM</span>
+                  <span>🕒</span>
+                  <span>Mon – Sat: 8:00 AM – 8:00 PM</span>
                 </div>
               </div>
+
+              <a
+                href={CONTACT.mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2.5 rounded-xl bg-[#EAF4FF] hover:bg-[#DBEAFE] border border-[#BFDBFE] text-[#1565C0] font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <span>🗺️ View on Google Maps</span>
+              </a>
             </div>
           </div>
         </div>
 
-        {/* Services we assist */}
-        <div className="bg-[#f0f4ff] rounded-2xl p-6 sm:p-8">
-          <h2 className="text-xl font-bold font-['Poppins'] text-slate-800 mb-4">Services We Assist With</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {[
-              'PAN, Aadhaar, Voter ID, Passport',
-              'Income, Caste & Domicile Certificates',
-              'Land Records & Bhulekh Assistance',
-              'PM-Kisan & Government Schemes',
-              'Ayushman Bharat Assistance',
-              'e-Shram & Labour Registration',
-              'AePS Banking Services',
-              'Insurance — Life, Health, Vehicle, Crop',
-              'Electricity, Water & Gas Bills',
-              'Mobile Recharge & DTH',
-              'FASTag & LPG Booking',
-              'Vehicle Licence & Transport Services',
-              'Train, Bus & Flight Booking',
-              'Competitive Exam & Job Forms',
-              'Scholarship Applications',
-              'Printing, Scanning & Lamination',
-              'Passport Photos & PDF Services',
-              'General Digital Assistance',
-            ].map((item, i) => (
-              <div key={i} className="flex items-start gap-2 text-xs text-slate-700 bg-white rounded-xl p-3">
-                <svg className="w-3.5 h-3.5 text-[#1a3a8f] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                </svg>
-                {item}
-              </div>
-            ))}
+        {/* Core Values */}
+        <div className="space-y-6">
+          <div className="text-center max-w-xl mx-auto">
+            <h2 className="section-title">Our Commitments to You</h2>
+            <p className="section-subtitle mx-auto">
+              Principles that guide our daily citizen assistance service in
+              Pipraich.
+            </p>
           </div>
-        </div>
 
-        {/* Our Approach */}
-        <div>
-          <h2 className="text-xl font-bold font-['Poppins'] text-slate-800 mb-6">Our Approach</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {values.map((v, i) => (
-              <div key={i} className="flex gap-4 p-5 rounded-2xl border border-slate-100">
-                <div className="w-11 h-11 rounded-xl bg-[#f0f4ff] flex items-center justify-center text-xl shrink-0">
-                  {v.icon}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {VALUES.map((val, idx) => (
+              <div
+                key={idx}
+                className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex gap-4"
+              >
+                <div className="w-11 h-11 rounded-xl bg-[#EAF4FF] border border-[#BFDBFE]/60 flex items-center justify-center text-2xl shrink-0">
+                  {val.icon}
                 </div>
                 <div>
-                  <h3 className="font-semibold font-['Poppins'] text-slate-800 text-sm mb-1">{v.title}</h3>
-                  <p className="text-slate-500 text-xs leading-relaxed">{v.desc}</p>
+                  <h3 className="font-bold text-sm font-['Poppins'] text-[#0D47A1] mb-1">
+                    {val.title}
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    {val.desc}
+                  </p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Disclaimer */}
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
-          <h3 className="font-semibold text-amber-800 text-sm mb-2 flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Disclaimer
+        {/* Public Disclaimer Card */}
+        <div className="bg-[#EAF4FF] border border-[#BFDBFE] rounded-3xl p-6 sm:p-7 space-y-2">
+          <h3 className="font-bold text-sm text-[#0D47A1] font-['Poppins'] flex items-center gap-2">
+            <span>ℹ️</span>
+            <span>Important Public Disclosure</span>
           </h3>
-          <p className="text-amber-700 text-xs leading-relaxed">
-            Gupta Enterprises is an independent service assistance centre. We are not affiliated with, endorsed by, or an official representative of any government department or authority. All services are provided as assistance and guidance only. Availability, eligibility, fees, requirements and processing times for individual services may depend on the relevant authority or service provider.
+          <p className="text-xs text-slate-700 leading-relaxed">
+            Gupta Enterprises operates as an independent service assistance
+            centre and authorized Common Service Centre (CSC). We assist
+            citizens in filling forms, arranging documents, and submitting
+            online applications on official portals. Acceptance, rejection,
+            processing timelines, and statutory portal fees are governed
+            strictly by the respective government departments and authorities.
           </p>
         </div>
 
-        {/* CTA */}
-        <div className="text-center flex flex-col sm:flex-row gap-3 justify-center">
-          <a
-            href={`tel:${CONTACT.phoneTel}`}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[#1a3a8f] text-white font-semibold rounded-xl hover:bg-[#122878] transition-colors text-sm justify-center"
+        {/* CTAs */}
+        <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
+          <Link
+            to="/services"
+            className="px-6 py-3 rounded-xl bg-[#1565C0] hover:bg-[#0D47A1] text-white font-semibold text-xs sm:text-sm shadow-xs transition-all"
           >
-            📞 {CONTACT.phone}
-          </a>
+            Explore Services
+          </Link>
+
+          <Link
+            to="/contact"
+            className="px-6 py-3 rounded-xl border border-[#1565C0] text-[#1565C0] hover:bg-[#EAF4FF] font-semibold text-xs sm:text-sm transition-all"
+          >
+            Contact Centre
+          </Link>
+
           <a
             href={waLink()}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[#25d366] text-white font-semibold rounded-xl hover:bg-[#1ebe5d] transition-colors text-sm justify-center"
+            className="px-6 py-3 rounded-xl bg-[#25D366] hover:bg-[#1EBE5D] text-white font-semibold text-xs sm:text-sm shadow-xs transition-all flex items-center gap-1.5"
           >
-            💬 WhatsApp Us
-          </a>
-          <Link
-            to="/contact"
-            className="inline-flex items-center gap-2 px-6 py-3 border border-slate-200 text-slate-700 font-semibold rounded-xl hover:border-[#1a3a8f] hover:text-[#1a3a8f] transition-colors text-sm justify-center"
-          >
-            📍 Contact Us
-          </Link>
-          <a
-            href={CONTACT.mapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 border border-slate-200 text-slate-700 font-semibold rounded-xl hover:border-[#1a3a8f] hover:text-[#1a3a8f] transition-colors text-sm justify-center"
-          >
-            🗺️ Get Directions
+            <span>💬 Chat on WhatsApp</span>
           </a>
         </div>
       </div>
     </div>
-  );
+  )
 }

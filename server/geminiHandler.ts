@@ -1,9 +1,13 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { IncomingMessage, ServerResponse } from 'node:http';
-import { GoogleGenAI } from '@google/genai';
+import fs from "node:fs"
+
+import path from "node:path"
+
+import { IncomingMessage, ServerResponse } from "node:http"
+
+import { GoogleGenAI } from "@google/genai"
 
 // ── KNOWLEDGE BASE & SYSTEM INSTRUCTION ────────────────────────────
+
 export const SYSTEM_PROMPT = `
 You are the official AI Citizen Assistant for "Gupta Enterprises", an authorized Common Service Centre (CSC) and Digital Seva Kendra located in Pipraich, Gorakhpur, Uttar Pradesh, India.
 
@@ -106,24 +110,32 @@ Your primary mission is to assist citizens with helpful, polite, and accurate in
 
 6. Actionable Contact Information:
    - When answering service questions, mention relevant documents and invite the citizen to visit the centre in Pipraich, call +91 87565 57994, or chat on WhatsApp (+91 87565 57994).
-`;
+`
 
 // Helper to safely load GEMINI_API_KEY from environment or .env files
+
 export function getGeminiApiKey(): string | null {
   if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim()) {
-    return process.env.GEMINI_API_KEY.trim();
+    return process.env.GEMINI_API_KEY.trim()
   }
 
   // Check .env.local, .env, or Notepad-created .env.local.txt / .env.txt in process.cwd()
-  const candidateFiles = ['.env.local', '.env', '.env.local.txt', '.env.txt'];
+
+  const candidateFiles = [".env.local", ".env", ".env.local.txt", ".env.txt"]
+
   for (const fileName of candidateFiles) {
-    const fullPath = path.join(process.cwd(), fileName);
+    const fullPath = path.join(process.cwd(), fileName)
+
     if (fs.existsSync(fullPath)) {
       try {
-        const content = fs.readFileSync(fullPath, 'utf8');
-        const match = content.match(/^GEMINI_API_KEY\s*=\s*(["']?)([^"'\r\n]+)\1/m);
+        const content = fs.readFileSync(fullPath, "utf8")
+
+        const match = content.match(
+          /^GEMINI_API_KEY\s*=\s*(["']?)([^"'\r\n]+)\1/m,
+        )
+
         if (match && match[2] && match[2].trim()) {
-          return match[2].trim();
+          return match[2].trim()
         }
       } catch {
         // ignore read error
@@ -131,206 +143,427 @@ export function getGeminiApiKey(): string | null {
     }
   }
 
-  return null;
+  return null
 }
 
 export interface ChatHistoryItem {
-  role: 'user' | 'model';
-  text: string;
+  role: "user" | "model"
+
+  text: string
+}
+
+export interface ChatLinkItem {
+  label: string
+  to?: string
+  href?: string
+  variant?: string
+}
+
+export interface ChatHistoryContent {
+  role: string
+  parts: { text: string }[]
 }
 
 export interface GeminiChatResponse {
-  success: boolean;
-  text: string;
-  fallback?: boolean;
-  error?: string;
-  links?: { label: string; to?: string; href?: string; variant?: string }[];
-  documents?: string[];
+  success: boolean
+  text: string
+  fallback?: boolean
+  error?: string
+  links?: ChatLinkItem[]
+  documents?: string[]
 }
 
 // Current supported models for Google Gen AI in cascade
+
 const CANDIDATE_MODELS = [
-  'gemini-flash-latest',
-  'gemini-3.8-flash',
-  'gemini-3.7-flash',
-  'gemini-3.5-flash',
-  'gemini-3.1-flash-lite',
-  'gemini-flash-lite-latest',
-  'gemini-pro-latest',
-];
+  "gemini-flash-latest",
+
+  "gemini-3.8-flash",
+
+  "gemini-3.7-flash",
+
+  "gemini-3.5-flash",
+
+  "gemini-3.1-flash-lite",
+
+  "gemini-flash-lite-latest",
+
+  "gemini-pro-latest",
+]
 
 export async function handleGeminiChat(
   message: string,
-  history: ChatHistoryItem[] = []
+
+  history: ChatHistoryItem[] = [],
 ): Promise<GeminiChatResponse> {
-  const apiKey = getGeminiApiKey();
+  const apiKey = getGeminiApiKey()
 
   if (!apiKey) {
-    console.warn('[Gemini API] GEMINI_API_KEY is not configured in .env.local or environment.');
+    console.warn(
+      "[Gemini API] GEMINI_API_KEY is not configured in .env.local or environment.",
+    )
+
     return {
       success: false,
+
       fallback: true,
-      text: '',
-      error: 'GEMINI_API_KEY not configured',
-    };
+
+      text: "",
+
+      error: "GEMINI_API_KEY not configured",
+    }
   }
 
   try {
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = new GoogleGenAI({ apiKey })
 
     // Format history for Google Gen AI SDK
-    const formattedContents: { role: string; parts: { text: string }[] }[] = [];
+
+    const formattedContents: ChatHistoryContent[] = []
 
     // Keep last 10 messages for conversation context
-    const recentHistory = history.slice(-10);
+
+    const recentHistory = history.slice(-10)
+
     for (const h of recentHistory) {
       if (h.text && h.text.trim()) {
         formattedContents.push({
-          role: h.role === 'user' ? 'user' : 'model',
+          role: h.role === "user" ? "user" : "model",
+
           parts: [{ text: h.text.trim() }],
-        });
+        })
       }
     }
 
     // Append latest user message
-    formattedContents.push({
-      role: 'user',
-      parts: [{ text: message.trim() }],
-    });
 
-    let responseText = '';
-    let lastError: any = null;
+    formattedContents.push({
+      role: "user",
+
+      parts: [{ text: message.trim() }],
+    })
+
+    let responseText = ""
+
+    let lastError: any = null
 
     // Try candidate models in cascade
+
     for (const model of CANDIDATE_MODELS) {
       try {
         const response = await ai.models.generateContent({
           model,
+
           contents: formattedContents,
+
           config: {
             systemInstruction: SYSTEM_PROMPT,
+
             temperature: 0.4,
+
             maxOutputTokens: 1000,
           },
-        });
+        })
+
         if (response.text && response.text.trim()) {
-          responseText = response.text.trim();
-          break;
+          responseText = response.text.trim()
+
+          break
         }
       } catch (modelErr: any) {
-        lastError = modelErr;
-        console.warn(`[Gemini API] Model ${model} failed (${modelErr?.message || modelErr}), trying fallback model...`);
+        lastError = modelErr
+
+        console.warn(
+          `[Gemini API] Model ${model} failed (${modelErr?.message || modelErr}), trying fallback model...`,
+        )
       }
     }
 
     if (!responseText.trim()) {
-      console.error('[Gemini API Error] All candidate models failed:', lastError);
+      console.error(
+        "[Gemini API Error] All candidate models failed:",
+        lastError,
+      )
+
       return {
         success: false,
+
         fallback: true,
-        text: '',
-        error: lastError?.message || 'Empty response from Gemini API',
-      };
+
+        text: "",
+
+        error: lastError?.message || "Empty response from Gemini API",
+      }
     }
 
     // Attach contextual links based on detected service intent
-    const lowerQ = (message + ' ' + responseText).toLowerCase();
-    const links: { label: string; to?: string; href?: string; variant?: string }[] = [];
 
-    if (lowerQ.includes('pan')) {
-      links.push({ label: '🪪 View PAN Service', to: '/services/pan-apply', variant: 'primary' });
-      links.push({ label: '📋 PAN Documents', to: '/documents?service=pan-apply', variant: 'secondary' });
-      links.push({ label: '💬 WhatsApp (+91 8756557994)', href: 'https://wa.me/918756557994?text=' + encodeURIComponent('Hello Gupta Enterprises, I need assistance regarding PAN Card. Please share the requirements and details.'), variant: 'whatsapp' });
-    } else if (lowerQ.includes('aadhaar') || lowerQ.includes('aadhar')) {
-      links.push({ label: '🔐 View Aadhaar Service', to: '/services/aadhaar-update', variant: 'primary' });
-      links.push({ label: '📋 Aadhaar Documents', to: '/documents?service=aadhaar-update', variant: 'secondary' });
-      links.push({ label: '💬 WhatsApp (+91 8756557994)', href: 'https://wa.me/918756557994?text=' + encodeURIComponent('Hello Gupta Enterprises, I need assistance regarding Aadhaar Services. Please share the requirements and details.'), variant: 'whatsapp' });
-    } else if (lowerQ.includes('certificate') || lowerQ.includes('income') || lowerQ.includes('caste') || lowerQ.includes('domicile') || lowerQ.includes('praman')) {
-      links.push({ label: '📜 View Certificates', to: '/services?cat=certificates', variant: 'primary' });
-      links.push({ label: '📋 Check Documents', to: '/documents', variant: 'secondary' });
-      links.push({ label: '💬 WhatsApp (+91 8756557994)', href: 'https://wa.me/918756557994?text=' + encodeURIComponent('Hello Gupta Enterprises, I need assistance regarding Certificates. Please share the requirements and details.'), variant: 'whatsapp' });
-    } else if (lowerQ.includes('scheme') || lowerQ.includes('yojana') || lowerQ.includes('kisan') || lowerQ.includes('ayushman') || lowerQ.includes('pension')) {
-      links.push({ label: '🏛️ Govt Schemes', to: '/services?cat=government', variant: 'primary' });
-      links.push({ label: '💬 WhatsApp Help', href: 'https://wa.me/918756557994?text=' + encodeURIComponent('Hello Gupta Enterprises, I need assistance regarding Government Schemes. Please share the requirements and details.'), variant: 'whatsapp' });
-    } else if (lowerQ.includes('bank') || lowerQ.includes('aeps') || lowerQ.includes('cash') || lowerQ.includes('money transfer')) {
-      links.push({ label: '🏦 Banking Services', to: '/services?cat=banking', variant: 'primary' });
-      links.push({ label: '💬 WhatsApp Enquiry', href: 'https://wa.me/918756557994?text=' + encodeURIComponent('Hello Gupta Enterprises, I need assistance regarding Banking Services. Please share the requirements and details.'), variant: 'whatsapp' });
-    } else if (lowerQ.includes('bill') || lowerQ.includes('bijli') || lowerQ.includes('recharge') || lowerQ.includes('electricity')) {
-      links.push({ label: '⚡ Bill Payments', to: '/services?cat=bills', variant: 'primary' });
-      links.push({ label: '💬 WhatsApp Enquiry', href: 'https://wa.me/918756557994?text=' + encodeURIComponent('Hello Gupta Enterprises, I need assistance regarding Bill Payments. Please share the requirements and details.'), variant: 'whatsapp' });
-    } else if (lowerQ.includes('contact') || lowerQ.includes('address') || lowerQ.includes('location') || lowerQ.includes('where') || lowerQ.includes('timing') || lowerQ.includes('hours') || lowerQ.includes('phone')) {
-      links.push({ label: '📞 Call +91 87565 57994', href: 'tel:+918756557994', variant: 'call' });
-      links.push({ label: '🗺️ Get Directions', href: 'https://maps.google.com/?q=Near+Saint+Xaviers+School+Bhatahat+Road+Buddh+Nagar+Pipraich+Gorakhpur+Uttar+Pradesh', variant: 'primary' });
-      links.push({ label: '💬 Chat on WhatsApp', href: 'https://wa.me/918756557994', variant: 'whatsapp' });
+    const lowerQ = (message + " " + responseText).toLowerCase()
+
+    const links: ChatLinkItem[] = []
+
+    if (lowerQ.includes("pan")) {
+      links.push({
+        label: "🪪 View PAN Service",
+        to: "/services/pan-apply",
+        variant: "primary",
+      })
+
+      links.push({
+        label: "📋 PAN Documents",
+        to: "/documents?service=pan-apply",
+        variant: "secondary",
+      })
+
+      links.push({
+        label: "💬 WhatsApp (+91 8756557994)",
+        href:
+          "https://wa.me/918756557994?text=" +
+          encodeURIComponent(
+            "Hello Gupta Enterprises, I need assistance regarding PAN Card. Please share the requirements and details.",
+          ),
+        variant: "whatsapp",
+      })
+    } else if (lowerQ.includes("aadhaar") || lowerQ.includes("aadhar")) {
+      links.push({
+        label: "🔐 View Aadhaar Service",
+        to: "/services/aadhaar-update",
+        variant: "primary",
+      })
+
+      links.push({
+        label: "📋 Aadhaar Documents",
+        to: "/documents?service=aadhaar-update",
+        variant: "secondary",
+      })
+
+      links.push({
+        label: "💬 WhatsApp (+91 8756557994)",
+        href:
+          "https://wa.me/918756557994?text=" +
+          encodeURIComponent(
+            "Hello Gupta Enterprises, I need assistance regarding Aadhaar Services. Please share the requirements and details.",
+          ),
+        variant: "whatsapp",
+      })
+    } else if (
+      lowerQ.includes("certificate") ||
+      lowerQ.includes("income") ||
+      lowerQ.includes("caste") ||
+      lowerQ.includes("domicile") ||
+      lowerQ.includes("praman")
+    ) {
+      links.push({
+        label: "📜 View Certificates",
+        to: "/services?cat=certificates-schemes",
+        variant: "primary",
+      })
+
+      links.push({
+        label: "📋 Check Documents",
+        to: "/documents",
+        variant: "secondary",
+      })
+
+      links.push({
+        label: "💬 WhatsApp (+91 8756557994)",
+        href:
+          "https://wa.me/918756557994?text=" +
+          encodeURIComponent(
+            "Hello Gupta Enterprises, I need assistance regarding Certificates. Please share the requirements and details.",
+          ),
+        variant: "whatsapp",
+      })
+    } else if (
+      lowerQ.includes("scheme") ||
+      lowerQ.includes("yojana") ||
+      lowerQ.includes("kisan") ||
+      lowerQ.includes("ayushman") ||
+      lowerQ.includes("pension")
+    ) {
+      links.push({
+        label: "🏛️ Govt Schemes",
+        to: "/services?cat=certificates-schemes",
+        variant: "primary",
+      })
+
+      links.push({
+        label: "💬 WhatsApp Help",
+        href:
+          "https://wa.me/918756557994?text=" +
+          encodeURIComponent(
+            "Hello Gupta Enterprises, I need assistance regarding Government Schemes. Please share the requirements and details.",
+          ),
+        variant: "whatsapp",
+      })
+    } else if (
+      lowerQ.includes("bank") ||
+      lowerQ.includes("aeps") ||
+      lowerQ.includes("cash") ||
+      lowerQ.includes("money transfer")
+    ) {
+      links.push({
+        label: "🏦 Banking Services",
+        to: "/services?cat=financial-business",
+        variant: "primary",
+      })
+
+      links.push({
+        label: "💬 WhatsApp Enquiry",
+        href:
+          "https://wa.me/918756557994?text=" +
+          encodeURIComponent(
+            "Hello Gupta Enterprises, I need assistance regarding Banking Services. Please share the requirements and details.",
+          ),
+        variant: "whatsapp",
+      })
+    } else if (
+      lowerQ.includes("bill") ||
+      lowerQ.includes("bijli") ||
+      lowerQ.includes("recharge") ||
+      lowerQ.includes("electricity")
+    ) {
+      links.push({
+        label: "⚡ Utility Bills",
+        to: "/services?cat=travel-other",
+        variant: "primary",
+      })
+
+      links.push({
+        label: "💬 WhatsApp Enquiry",
+        href:
+          "https://wa.me/918756557994?text=" +
+          encodeURIComponent(
+            "Hello Gupta Enterprises, I need assistance regarding Bill Payments. Please share the requirements and details.",
+          ),
+        variant: "whatsapp",
+      })
+    } else if (
+      lowerQ.includes("contact") ||
+      lowerQ.includes("address") ||
+      lowerQ.includes("location") ||
+      lowerQ.includes("where") ||
+      lowerQ.includes("timing") ||
+      lowerQ.includes("hours") ||
+      lowerQ.includes("phone")
+    ) {
+      links.push({
+        label: "📞 Call +91 87565 57994",
+        href: "tel:+918756557994",
+        variant: "call",
+      })
+
+      links.push({
+        label: "🗺️ Get Directions",
+        href: "https://maps.google.com/?q=Near+Saint+Xaviers+School+Bhatahat+Road+Buddh+Nagar+Pipraich+Gorakhpur+Uttar+Pradesh",
+        variant: "primary",
+      })
+
+      links.push({
+        label: "💬 Chat on WhatsApp",
+        href: "https://wa.me/918756557994",
+        variant: "whatsapp",
+      })
     }
 
     return {
       success: true,
+
       text: responseText,
+
       links: links.length > 0 ? links : undefined,
-    };
+    }
   } catch (err: any) {
-    console.error('[Gemini API Error]', err);
+    console.error("[Gemini API Error]", err)
+
     return {
       success: false,
+
       fallback: true,
-      text: '',
-      error: err?.message || 'Gemini API Error',
-    };
+
+      text: "",
+
+      error: err?.message || "Gemini API Error",
+    }
   }
 }
 
 // ── HTTP MIDDLEWARE FOR VITE DEV / PREVIEW SERVER ─────────────────
+
 export function createChatMiddleware() {
-  return async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
-    const url = (req.url || '').split('?')[0];
+  return async (
+    req: IncomingMessage,
+    res: ServerResponse,
+    next: () => void,
+  ) => {
+    const url = (req.url || "").split("?")[0]
 
     // Only intercept POST /api/chat
-    if (url !== '/api/chat') {
-      return next();
+
+    if (url !== "/api/chat") {
+      return next()
     }
 
-    if (req.method !== 'POST') {
-      res.statusCode = 405;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ error: 'Method Not Allowed' }));
-      return;
+    if (req.method !== "POST") {
+      res.statusCode = 405
+
+      res.setHeader("Content-Type", "application/json")
+
+      res.end(JSON.stringify({ error: "Method Not Allowed" }))
+
+      return
     }
 
-    let rawBody = '';
-    req.on('data', chunk => {
-      rawBody += chunk;
-    });
+    let rawBody = ""
 
-    req.on('end', async () => {
+    req.on("data", (chunk) => {
+      rawBody += chunk
+    })
+
+    req.on("end", async () => {
       try {
-        const body = rawBody ? JSON.parse(rawBody) : {};
-        const { message, history } = body;
+        const body = rawBody ? JSON.parse(rawBody) : {}
 
-        if (!message || typeof message !== 'string') {
-          res.statusCode = 400;
-          res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({ error: 'Missing or invalid "message" in request body' }));
-          return;
+        const { message, history } = body
+
+        if (!message || typeof message !== "string") {
+          res.statusCode = 400
+
+          res.setHeader("Content-Type", "application/json")
+
+          res.end(
+            JSON.stringify({
+              error: 'Missing or invalid "message" in request body',
+            }),
+          )
+
+          return
         }
 
-        const result = await handleGeminiChat(message, history || []);
+        const result = await handleGeminiChat(message, history || [])
 
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
-        res.end(JSON.stringify(result));
+        res.statusCode = 200
+
+        res.setHeader("Content-Type", "application/json; charset=utf-8")
+
+        res.end(JSON.stringify(result))
       } catch (err: any) {
-        console.error('[Chat Middleware Error]', err);
-        res.statusCode = 500;
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
+        console.error("[Chat Middleware Error]", err)
+
+        res.statusCode = 500
+
+        res.setHeader("Content-Type", "application/json; charset=utf-8")
+
         res.end(
           JSON.stringify({
             success: false,
+
             fallback: true,
-            error: err?.message || 'Internal Server Error',
-          })
-        );
+
+            error: err?.message || "Internal Server Error",
+          }),
+        )
       }
-    });
-  };
+    })
+  }
 }

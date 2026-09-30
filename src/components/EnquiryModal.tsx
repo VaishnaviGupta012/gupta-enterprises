@@ -1,130 +1,141 @@
-import { useState, useEffect } from 'react';
-import { services } from '../data/services';
-import { waLink } from '../data/contact';
-import { submitEnquiry } from '../lib/supabase';
+import { useState, useEffect } from "react"
+import { services } from "../data/services"
+import { waLink } from "../data/contact"
+import { submitEnquiry } from "../lib/supabase"
 
 interface EnquiryModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  preselectedService?: string;
+  isOpen: boolean
+  onClose: () => void
+  preselectedService?: string
 }
 
-export default function EnquiryModal({ isOpen, onClose, preselectedService = '' }: EnquiryModalProps) {
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [sameAsPhone, setSameAsPhone] = useState(true);
-  const [whatsapp, setWhatsapp] = useState('');
-  const [email, setEmail] = useState('');
-  const [service, setService] = useState(preselectedService || 'General Digital / CSC Enquiry');
-  const [message, setMessage] = useState('');
+export default function EnquiryModal({
+  isOpen,
+  onClose,
+  preselectedService = "",
+}: EnquiryModalProps) {
+  const [name, setName] = useState("")
+  const [phone, setPhone] = useState("")
+  const [sameAsPhone, setSameAsPhone] = useState(true)
+  const [whatsapp, setWhatsapp] = useState("")
+  const [email, setEmail] = useState("")
+  const [service, setService] = useState(
+    preselectedService || "General CSC & Digital Enquiry",
+  )
+  const [message, setMessage] = useState("")
 
-  const [loading, setLoading] = useState(false);
-  const [referenceId, setReferenceId] = useState<string | null>(null);
-  const [submittedService, setSubmittedService] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false)
+  const [referenceId, setReferenceId] = useState<string | null>(null)
+  const [submittedService, setSubmittedService] = useState("")
+  const [errorMsg, setErrorMsg] = useState("")
 
-  // Update service when prop changes
+  // Update selected service when prop changes
   useEffect(() => {
     if (preselectedService) {
-      // Find matching service name
       const matched = services.find(
-        (s) => s.id === preselectedService || s.name.toLowerCase().includes(preselectedService.toLowerCase())
-      );
+        (s) =>
+          s.id === preselectedService ||
+          s.name.toLowerCase().includes(preselectedService.toLowerCase()),
+      )
       if (matched) {
-        setService(matched.name);
+        setService(matched.name)
       } else {
-        setService(preselectedService);
+        setService(preselectedService)
       }
     }
-  }, [preselectedService, isOpen]);
+  }, [preselectedService, isOpen])
 
-  // Keep WhatsApp in sync if "Same as phone" is checked
+  // Sync WhatsApp number if checkbox is checked
   useEffect(() => {
     if (sameAsPhone) {
-      setWhatsapp(phone);
+      setWhatsapp(phone)
     }
-  }, [phone, sameAsPhone]);
+  }, [phone, sameAsPhone])
 
-  // Reset when modal opens
+  // Reset status on open
   useEffect(() => {
     if (isOpen) {
-      setReferenceId(null);
-      setErrorMsg('');
+      setReferenceId(null)
+      setErrorMsg("")
     }
-  }, [isOpen]);
+  }, [isOpen])
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setErrorMsg('');
+    e.preventDefault()
+    setErrorMsg("")
 
-    // Validations
+    // Input Validation
     if (!name.trim()) {
-      setErrorMsg('Please enter your full name.');
-      return;
+      setErrorMsg("Please enter your full name.")
+      return
     }
 
-    const cleanPhone = phone.replace(/\D/g, '');
+    const cleanPhone = phone.replace(/\D/g, "")
     if (!cleanPhone || cleanPhone.length !== 10 || !/^[6-9]/.test(cleanPhone)) {
-      setErrorMsg('Please enter a valid 10-digit Indian mobile number (starting with 6, 7, 8, or 9).');
-      return;
+      setErrorMsg(
+        "Please enter a valid 10-digit Indian mobile number (starting with 6, 7, 8, or 9).",
+      )
+      return
     }
 
     if (!sameAsPhone && whatsapp) {
-      const cleanWa = whatsapp.replace(/\D/g, '');
+      const cleanWa = whatsapp.replace(/\D/g, "")
       if (cleanWa.length !== 10) {
-        setErrorMsg('Please enter a valid 10-digit WhatsApp number.');
-        return;
+        setErrorMsg("Please enter a valid 10-digit WhatsApp number.")
+        return
       }
     }
 
     if (!service.trim()) {
-      setErrorMsg('Please select a service.');
-      return;
+      setErrorMsg("Please select a service.")
+      return
     }
 
     if (!message.trim()) {
-      setErrorMsg('Please describe your requirement or query.');
-      return;
+      setErrorMsg("Please describe what assistance you require.")
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
 
     try {
       const res = await submitEnquiry({
-        name,
+        name: name.trim(),
         phone: cleanPhone,
-        whatsapp_number: sameAsPhone ? cleanPhone : whatsapp.replace(/\D/g, ''),
+        whatsapp_number: sameAsPhone ? cleanPhone : whatsapp.replace(/\D/g, ""),
         email: email.trim(),
         service,
-        message,
-      });
+        message: message.trim(),
+      })
 
       if (res.success) {
-        setReferenceId(res.referenceId);
-        setSubmittedService(service);
-        // Reset form
-        setName('');
-        setPhone('');
-        setEmail('');
-        setMessage('');
+        setReferenceId(res.referenceId)
+        setSubmittedService(service)
+        setName("")
+        setPhone("")
+        setEmail("")
+        setMessage("")
       } else {
-        setErrorMsg(res.error || 'Failed to submit enquiry. Please try again.');
+        setErrorMsg(res.error || "Failed to submit enquiry. Please try again.")
       }
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Something went wrong. Please try again.');
+      setErrorMsg(
+        err?.message ||
+          "Something went wrong while submitting. Please try again.",
+      )
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
   const whatsappContinueUrl = referenceId
     ? waLink(
-        `Hello Gupta Enterprises, I have submitted enquiry ref [${referenceId}] for ${submittedService}. Please check.`,
-        true
+        `Hello Gupta Enterprises, I submitted an online enquiry [Ref: ${referenceId}] regarding ${submittedService}. Please guide me on the next steps.`,
+        true,
       )
-    : waLink();
+    : waLink()
 
   return (
     <div
@@ -133,65 +144,84 @@ export default function EnquiryModal({ isOpen, onClose, preselectedService = '' 
       aria-modal="true"
       aria-labelledby="enquiry-modal-title"
     >
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-lg overflow-hidden flex flex-col max-h-[92vh]">
-        {/* Header */}
-        <div className="bg-[#1a3a8f] text-white px-5 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-lg">
+      <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden flex flex-col max-h-[92vh]">
+        {/* Modal Header */}
+        <div className="bg-[#1565C0] text-white px-5 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center text-lg font-['Poppins'] shadow-sm">
               📝
             </div>
             <div>
-              <h2 id="enquiry-modal-title" className="font-semibold text-base font-['Poppins']">
+              <h2
+                id="enquiry-modal-title"
+                className="font-bold text-base font-['Poppins'] leading-tight"
+              >
                 Submit Service Enquiry
               </h2>
-              <p className="text-blue-100 text-xs">Gupta Enterprises • Citizen Helpdesk</p>
+              <p className="text-blue-100 text-xs font-medium">
+                Gupta Enterprises • Citizen Helpdesk
+              </p>
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-lg hover:bg-white/15 text-white/80 hover:text-white flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-xl hover:bg-white/15 text-white/80 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
             aria-label="Close modal"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
 
-        {/* Content */}
-        <div className="p-5 overflow-y-auto flex-1">
+        {/* Modal Body */}
+        <div className="p-5 sm:p-6 overflow-y-auto flex-1">
           {referenceId ? (
-            /* Success confirmation */
+            /* Success confirmation screen */
             <div className="text-center py-4 space-y-4">
-              <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl font-bold shadow-sm">
+              <div className="w-16 h-16 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-full flex items-center justify-center mx-auto text-3xl font-bold shadow-xs">
                 ✓
               </div>
 
               <div>
-                <span className="text-xs uppercase tracking-wider font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                  Enquiry Submitted
+                <span className="text-[11px] uppercase tracking-wider font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                  Enquiry Recorded
                 </span>
-                <h3 className="text-xl font-bold text-slate-900 mt-2 font-['Poppins']">
-                  Thank you!
+                <h3 className="text-xl font-bold text-[#0D47A1] mt-2.5 font-['Poppins']">
+                  Thank You, We Received Your Request!
                 </h3>
-                <p className="text-slate-600 text-sm mt-1 max-w-sm mx-auto leading-relaxed">
-                  Your enquiry has been submitted successfully. Gupta Enterprises will contact you shortly.
+                <p className="text-slate-500 text-xs mt-1 max-w-sm mx-auto leading-relaxed">
+                  Your enquiry has been logged into our system. Our team at
+                  Pipraich will review your request promptly.
                 </p>
               </div>
 
               {/* Reference ID Card */}
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 max-w-sm mx-auto text-left">
-                <div className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold">
-                  Your Reference ID:
+              <div className="bg-[#F5F9FF] border border-[#BFDBFE] rounded-2xl p-4 max-w-sm mx-auto text-left shadow-2xs">
+                <div className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">
+                  Tracking Reference ID:
                 </div>
-                <div className="text-xl font-mono font-bold text-[#1a3a8f] mt-0.5 tracking-wide">
+                <div className="text-xl font-mono font-bold text-[#1565C0] mt-0.5 tracking-wider">
                   {referenceId}
                 </div>
-                <div className="text-xs text-slate-600 mt-2">
-                  <span className="font-medium text-slate-700">Service:</span> {submittedService}
+                <div className="text-xs text-slate-700 mt-2 pt-2 border-t border-slate-200">
+                  <span className="font-semibold text-slate-500">Service:</span>{" "}
+                  {submittedService}
                 </div>
-                <p className="text-[11px] text-slate-500 mt-1 italic">
-                  Please save this reference ID for future communication.
+                <p className="text-[11px] text-slate-400 mt-1 italic">
+                  Keep this Reference ID handy when calling or visiting our
+                  centre.
                 </p>
               </div>
 
@@ -201,20 +231,24 @@ export default function EnquiryModal({ isOpen, onClose, preselectedService = '' 
                   href={whatsappContinueUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-2.5 px-4 bg-[#25d366] text-white font-semibold text-sm rounded-xl hover:bg-[#1ebe5d] transition-colors flex items-center justify-center gap-2 shadow-sm"
+                  className="w-full py-3 px-4 bg-[#25D366] text-white font-bold text-xs sm:text-sm rounded-xl hover:bg-[#1EBE5D] transition-all flex items-center justify-center gap-2 shadow-sm"
                 >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-4 h-4"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                   </svg>
-                  Continue on WhatsApp
+                  <span>Chat on WhatsApp with Reference</span>
                 </a>
 
                 <button
                   type="button"
                   onClick={onClose}
-                  className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-sm rounded-xl transition-colors"
+                  className="w-full py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-colors cursor-pointer"
                 >
-                  Done
+                  Done &amp; Close
                 </button>
               </div>
             </div>
@@ -230,7 +264,7 @@ export default function EnquiryModal({ isOpen, onClose, preselectedService = '' 
 
               {/* Full Name */}
               <div>
-                <label className="block text-slate-700 font-medium mb-1">
+                <label className="block text-[#172033] font-semibold mb-1">
                   Full Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -239,18 +273,18 @@ export default function EnquiryModal({ isOpen, onClose, preselectedService = '' 
                   placeholder="e.g. Ramesh Kumar"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-slate-800 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-[#1a3a8f]/20 focus:border-[#1a3a8f] text-xs transition-all"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-[#172033] placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-[#1565C0]/20 focus:border-[#1565C0] text-xs transition-all"
                 />
               </div>
 
-              {/* Mobile Number & WhatsApp Checkbox */}
+              {/* Mobile Phone & WhatsApp */}
               <div className="space-y-2">
                 <div>
-                  <label className="block text-slate-700 font-medium mb-1">
-                    Mobile Number <span className="text-red-500">*</span>
+                  <label className="block text-[#172033] font-semibold mb-1">
+                    Mobile Phone Number <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 font-bold">
                       +91
                     </span>
                     <input
@@ -259,8 +293,10 @@ export default function EnquiryModal({ isOpen, onClose, preselectedService = '' 
                       maxLength={10}
                       placeholder="10-digit mobile number"
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                      className="w-full pl-11 pr-3 py-2 rounded-xl border border-slate-200 text-slate-800 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-[#1a3a8f]/20 focus:border-[#1a3a8f] text-xs transition-all font-mono"
+                      onChange={(e) =>
+                        setPhone(e.target.value.replace(/\D/g, ""))
+                      }
+                      className="w-full pl-12 pr-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-[#172033] placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-[#1565C0]/20 focus:border-[#1565C0] text-xs font-mono transition-all"
                     />
                   </div>
                 </div>
@@ -268,23 +304,26 @@ export default function EnquiryModal({ isOpen, onClose, preselectedService = '' 
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    id="same-as-phone"
+                    id="modal-same-phone"
                     checked={sameAsPhone}
                     onChange={(e) => setSameAsPhone(e.target.checked)}
-                    className="rounded text-[#1a3a8f] focus:ring-[#1a3a8f] h-3.5 w-3.5"
+                    className="rounded text-[#1565C0] focus:ring-[#1565C0] h-3.5 w-3.5 accent-[#1565C0]"
                   />
-                  <label htmlFor="same-as-phone" className="text-slate-600 text-[11px] select-none cursor-pointer">
+                  <label
+                    htmlFor="modal-same-phone"
+                    className="text-slate-600 text-[11px] select-none cursor-pointer"
+                  >
                     WhatsApp number is same as mobile number
                   </label>
                 </div>
 
                 {!sameAsPhone && (
                   <div>
-                    <label className="block text-slate-700 font-medium mb-1">
+                    <label className="block text-[#172033] font-semibold mb-1">
                       WhatsApp Number
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 font-bold">
                         +91
                       </span>
                       <input
@@ -292,115 +331,84 @@ export default function EnquiryModal({ isOpen, onClose, preselectedService = '' 
                         maxLength={10}
                         placeholder="10-digit WhatsApp number"
                         value={whatsapp}
-                        onChange={(e) => setWhatsapp(e.target.value.replace(/\D/g, ''))}
-                        className="w-full pl-11 pr-3 py-2 rounded-xl border border-slate-200 text-slate-800 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-[#1a3a8f]/20 focus:border-[#1a3a8f] text-xs transition-all font-mono"
+                        onChange={(e) =>
+                          setWhatsapp(e.target.value.replace(/\D/g, ""))
+                        }
+                        className="w-full pl-12 pr-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-[#172033] placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-[#1565C0]/20 focus:border-[#1565C0] text-xs font-mono transition-all"
                       />
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Email */}
+              {/* Email Address */}
               <div>
-                <label className="block text-slate-700 font-medium mb-1">
-                  Email Address <span className="text-slate-400 font-normal">(Optional)</span>
+                <label className="block text-[#172033] font-semibold mb-1">
+                  Email Address{" "}
+                  <span className="text-slate-400 font-normal">(Optional)</span>
                 </label>
                 <input
                   type="email"
                   placeholder="your.email@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-slate-800 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-[#1a3a8f]/20 focus:border-[#1a3a8f] text-xs transition-all"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-[#172033] placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-[#1565C0]/20 focus:border-[#1565C0] text-xs transition-all"
                 />
               </div>
 
-              {/* Select Service */}
+              {/* Service Selection */}
               <div>
-                <label className="block text-slate-700 font-medium mb-1">
-                  Select Service <span className="text-red-500">*</span>
+                <label className="block text-[#172033] font-semibold mb-1">
+                  Select Service Required{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={service}
                   onChange={(e) => setService(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-slate-800 outline-none focus:ring-2 focus:ring-[#1a3a8f]/20 focus:border-[#1a3a8f] text-xs transition-all bg-white"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-[#172033] outline-none focus:ring-2 focus:ring-[#1565C0]/20 focus:border-[#1565C0] text-xs transition-all font-medium"
                 >
-                  <option value="General Digital / CSC Enquiry">General Digital / CSC Enquiry</option>
-                  <option value="Aadhaar Update / Correction">Aadhaar Update / Correction</option>
-                  <option value="New PAN Card Application">New PAN Card Application</option>
-                  <option value="PAN Card Correction / Update">PAN Card Correction / Update</option>
-                  <option value="Income Certificate (आय प्रमाण पत्र)">Income Certificate (आय प्रमाण पत्र)</option>
-                  <option value="Caste Certificate (जाति प्रमाण पत्र)">Caste Certificate (जाति प्रमाण पत्र)</option>
-                  <option value="Domicile Certificate (निवास प्रमाण पत्र)">Domicile Certificate (निवास प्रमाण पत्र)</option>
-                  <option value="Ayushman Bharat Golden Card">Ayushman Bharat Golden Card</option>
-                  <option value="PM Kisan Samman Nidhi">PM Kisan Samman Nidhi</option>
-                  <option value="E-Shram Card Registration">E-Shram Card Registration</option>
-                  <option value="AEPS Cash Withdrawal (Banking)">AEPS Cash Withdrawal (Banking)</option>
-                  <option value="Electricity Bill Payment (UPPCL)">Electricity Bill Payment (UPPCL)</option>
-                  <option value="Passport Assistance">Passport Assistance</option>
-                  <option value="Voter ID Card">Voter ID Card</option>
-                  <option value="Ration Card Service">Ration Card Service</option>
-                  <option value="UP Pension Scheme">UP Pension Scheme</option>
-                  {services
-                    .filter(
-                      (s) =>
-                        ![
-                          'aadhaar-update',
-                          'pan-apply',
-                          'income-certificate',
-                          'caste-certificate',
-                          'domicile-certificate',
-                          'ayushman-card',
-                          'pm-kisan',
-                          'eshram-card',
-                          'cash-withdrawal',
-                          'electricity-bill',
-                          'passport-apply',
-                          'voter-apply',
-                          'ration-apply',
-                          'old-age-pension',
-                        ].includes(s.id)
-                    )
-                    .map((s) => (
-                      <option key={s.id} value={s.name}>
-                        {s.name} ({s.category})
-                      </option>
-                    ))}
+                  <option value="General CSC & Digital Enquiry">
+                    General CSC &amp; Digital Enquiry
+                  </option>
+                  {services.map((s) => (
+                    <option key={s.id} value={s.name}>
+                      {s.name} ({s.category})
+                    </option>
+                  ))}
                 </select>
               </div>
 
-              {/* Message / Requirement */}
+              {/* Message */}
               <div>
-                <label className="block text-slate-700 font-medium mb-1">
-                  Message / Requirement <span className="text-red-500">*</span>
+                <label className="block text-[#172033] font-semibold mb-1">
+                  Message / Requirement Details{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   required
                   rows={3}
-                  placeholder="Please describe what help or correction you need..."
+                  placeholder="Describe your requirement, correction needed, or any questions..."
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-slate-800 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-[#1a3a8f]/20 focus:border-[#1a3a8f] text-xs transition-all resize-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-[#172033] placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-[#1565C0]/20 focus:border-[#1565C0] text-xs transition-all resize-none"
                 />
               </div>
 
-              {/* Safety notice (Requirement) */}
-              <div className="bg-blue-50/70 border border-blue-100 rounded-xl p-2.5 text-[11px] text-slate-600 flex items-start gap-2">
-                <span className="text-blue-600 text-sm shrink-0">🛡️</span>
+              {/* Safe Citizen Notice */}
+              <div className="bg-[#EAF4FF] border border-[#BFDBFE] rounded-xl p-3 text-[11px] text-[#1565C0] flex items-start gap-2">
+                <span className="text-sm shrink-0">🛡️</span>
                 <span>
-                  <strong>Security Note:</strong> Do not enter Aadhaar numbers, PAN numbers, passwords, OTPs, or bank details. Gupta Enterprises will verify original documents in person.
+                  <strong>Security Note:</strong> Do not enter passwords, OTPs,
+                  or bank account PINs. Gupta Enterprises will verify original
+                  documents in person.
                 </span>
               </div>
 
-              {/* Privacy statement (Requirement) */}
-              <p className="text-[11px] text-slate-500 text-center leading-relaxed">
-                By submitting this form, you agree that Gupta Enterprises may contact you regarding your enquiry.
-              </p>
-
-              {/* Submit button */}
+              {/* Submit CTA */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 px-4 bg-[#1a3a8f] hover:bg-[#122878] disabled:opacity-50 text-white font-semibold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+                className="w-full py-3 px-4 bg-[#1565C0] hover:bg-[#0D47A1] disabled:opacity-50 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 {loading ? (
                   <>
@@ -410,9 +418,7 @@ export default function EnquiryModal({ isOpen, onClose, preselectedService = '' 
                 ) : (
                   <>
                     <span>Submit Enquiry</span>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
+                    <span>→</span>
                   </>
                 )}
               </button>
@@ -421,5 +427,5 @@ export default function EnquiryModal({ isOpen, onClose, preselectedService = '' 
         </div>
       </div>
     </div>
-  );
+  )
 }
